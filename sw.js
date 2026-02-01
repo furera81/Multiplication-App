@@ -1,10 +1,13 @@
 const CACHE_NAME = 'math-hero-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/css/style.css',
-  '/js/app.js',
-  '/manifest.json',
+  'index.html',
+  'math.html',
+  'workouts.html',
+  'css/style.css',
+  'css/workouts.css',
+  'js/app.js',
+  'js/workouts.js',
+  'manifest.json',
 ];
 
 // Install: cache all assets

@@ -3,148 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#6c5ce7">
-  <meta name="description" content="A fun math practice app for kids!">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Math Hero">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icons/icon-192.svg">
-  <title>Math Hero - Fun Math for Kids!</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="description" content="Fun apps for the family - Math practice and Ab workouts!">
+  <title>My Apps</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f1a;
+      color: #f0f0f0;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 500px;
+      width: 100%;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #6c5ce7, #00cec9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #a0a0b8;
+      margin-bottom: 36px;
+      font-size: 1.05rem;
+    }
+
+    .app-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .app-card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      padding: 28px 24px;
+      border-radius: 18px;
+      transition: transform 0.15s, box-shadow 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-card:active {
+      transform: scale(0.97);
+    }
+
+    .card-math {
+      background: linear-gradient(135deg, #1a1a3e, #2a1a4e);
+      border: 2px solid rgba(108, 92, 231, 0.3);
+      box-shadow: 0 4px 20px rgba(108, 92, 231, 0.15);
+    }
+
+    .card-workout {
+      background: linear-gradient(135deg, #2a1a1a, #3a1a2a);
+      border: 2px solid rgba(255, 107, 107, 0.3);
+      box-shadow: 0 4px 20px rgba(255, 107, 107, 0.15);
+    }
+
+    .card-icon {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .card-math .card-title { color: #a29bfe; }
+    .card-workout .card-title { color: #ff6b6b; }
+
+    .card-desc {
+      color: #a0a0b8;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .card-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .card-math .tag { background: rgba(108, 92, 231, 0.15); color: #a29bfe; }
+    .card-workout .tag { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; }
+  </style>
 </head>
 <body>
-  <div id="app">
+  <div class="container">
+    <h1>My Apps</h1>
+    <p class="subtitle">Tap to open</p>
 
-    <!-- Start Screen -->
-    <div id="screen-start" class="screen active">
-      <div class="start-content">
-        <h1 class="app-title">Math Hero</h1>
-        <p class="app-subtitle">Become a Math Superstar!</p>
+    <div class="app-cards">
 
-        <div class="menu-section">
-          <h2>Choose Your Challenge</h2>
-          <div class="operation-grid">
-            <button class="op-btn" data-op="addition">
-              <span class="op-icon">+</span>
-              <span class="op-label">Addition</span>
-            </button>
-            <button class="op-btn" data-op="subtraction">
-              <span class="op-icon">−</span>
-              <span class="op-label">Subtraction</span>
-            </button>
-            <button class="op-btn" data-op="multiplication">
-              <span class="op-icon">×</span>
-              <span class="op-label">Multiplication</span>
-            </button>
-            <button class="op-btn" data-op="division">
-              <span class="op-icon">÷</span>
-              <span class="op-label">Division</span>
-            </button>
-            <button class="op-btn op-btn-mix" data-op="mixed">
-              <span class="op-icon">?</span>
-              <span class="op-label">Mixed</span>
-            </button>
-          </div>
+      <a href="math.html" class="app-card card-math">
+        <span class="card-icon">&#x1F9EE;</span>
+        <h2 class="card-title">Math Hero</h2>
+        <p class="card-desc">Fun math practice for kids! Addition, subtraction, multiplication, and division with scoring and streaks.</p>
+        <div class="card-tags">
+          <span class="tag">4 Operations</span>
+          <span class="tag">3 Difficulties</span>
+          <span class="tag">Score Tracking</span>
         </div>
+      </a>
 
-        <div class="menu-section">
-          <h2>Difficulty</h2>
-          <div class="difficulty-buttons">
-            <button class="diff-btn active" data-diff="easy">Easy</button>
-            <button class="diff-btn" data-diff="medium">Medium</button>
-            <button class="diff-btn" data-diff="hard">Hard</button>
-          </div>
+      <a href="workouts.html" class="app-card card-workout">
+        <span class="card-icon">&#x1F525;</span>
+        <h2 class="card-title">Ab Blaster</h2>
+        <p class="card-desc">10-minute ab workouts with animated exercise guides, video demos, and a built-in timer.</p>
+        <div class="card-tags">
+          <span class="tag">3 Workout Sets</span>
+          <span class="tag">Video Demos</span>
+          <span class="tag">Timer</span>
         </div>
+      </a>
 
-        <div class="menu-section">
-          <h2>Questions</h2>
-          <div class="difficulty-buttons">
-            <button class="count-btn active" data-count="10">10</button>
-            <button class="count-btn" data-count="20">20</button>
-            <button class="count-btn" data-count="50">50</button>
-          </div>
-        </div>
-
-        <button id="btn-start" class="btn-primary" disabled>Start!</button>
-      </div>
     </div>
-
-    <!-- Game Screen -->
-    <div id="screen-game" class="screen">
-      <div class="game-header">
-        <div class="game-stat">
-          <span class="stat-label">Score</span>
-          <span id="score" class="stat-value">0</span>
-        </div>
-        <div class="game-stat">
-          <span class="stat-label">Question</span>
-          <span id="progress" class="stat-value">1/10</span>
-        </div>
-        <div class="game-stat">
-          <span class="stat-label">Streak</span>
-          <span id="streak" class="stat-value">0</span>
-        </div>
-      </div>
-
-      <div class="progress-bar-container">
-        <div id="progress-bar" class="progress-bar"></div>
-      </div>
-
-      <div class="question-area">
-        <div id="feedback-area" class="feedback-area"></div>
-        <div id="question" class="question-text">5 × 3 = ?</div>
-      </div>
-
-      <div id="answer-area" class="answer-area">
-        <div class="answer-options" id="answer-options"></div>
-      </div>
-
-      <div class="game-footer">
-        <button id="btn-quit" class="btn-secondary">Quit</button>
-      </div>
-    </div>
-
-    <!-- Results Screen -->
-    <div id="screen-results" class="screen">
-      <div class="results-content">
-        <div id="results-emoji" class="results-emoji"></div>
-        <h1 id="results-title" class="results-title">Great Job!</h1>
-        <p id="results-subtitle" class="results-subtitle"></p>
-
-        <div class="results-stats">
-          <div class="result-stat">
-            <span class="result-stat-value" id="result-score">0</span>
-            <span class="result-stat-label">Score</span>
-          </div>
-          <div class="result-stat">
-            <span class="result-stat-value" id="result-correct">0</span>
-            <span class="result-stat-label">Correct</span>
-          </div>
-          <div class="result-stat">
-            <span class="result-stat-value" id="result-accuracy">0%</span>
-            <span class="result-stat-label">Accuracy</span>
-          </div>
-          <div class="result-stat">
-            <span class="result-stat-value" id="result-best-streak">0</span>
-            <span class="result-stat-label">Best Streak</span>
-          </div>
-        </div>
-
-        <div id="results-review" class="results-review">
-          <h2>Review Mistakes</h2>
-          <div id="mistakes-list" class="mistakes-list"></div>
-        </div>
-
-        <div class="results-buttons">
-          <button id="btn-play-again" class="btn-primary">Play Again</button>
-          <button id="btn-home" class="btn-secondary">Home</button>
-        </div>
-      </div>
-    </div>
-
   </div>
-
-  <script src="js/app.js"></script>
 </body>
 </html>

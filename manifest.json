@@ -2,7 +2,7 @@
   "name": "Math Hero - Fun Math for Kids",
   "short_name": "Math Hero",
   "description": "A fun math practice app for kids with addition, subtraction, multiplication, and division!",
-  "start_url": "/index.html",
+  "start_url": "math.html",
   "display": "standalone",
   "background_color": "#f8f9ff",
   "theme_color": "#6c5ce7",
