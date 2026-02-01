@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ff6b6b">
+  <meta name="description" content="10-minute ab workout routines with animated guides and video demos.">
+  <title>Ab Blaster - 10 Minute Ab Workouts</title>
+  <link rel="stylesheet" href="css/workouts.css">
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- ===== HOME SCREEN ===== -->
+    <div id="screen-home" class="screen active">
+      <header class="home-header">
+        <h1 class="logo">Ab Blaster</h1>
+        <p class="tagline">10-Minute Ab Workouts</p>
+      </header>
+
+      <div class="workout-cards">
+
+        <!-- SET A -->
+        <button class="workout-card" data-set="A">
+          <span class="card-badge">Beginner</span>
+          <h2 class="card-title">Core Foundations</h2>
+          <p class="card-desc">Build a solid base with classic ab exercises.</p>
+          <div class="card-meta">
+            <span>10 min</span>
+            <span>6 exercises</span>
+            <span>2 rounds</span>
+          </div>
+        </button>
+
+        <!-- SET B -->
+        <button class="workout-card card-intermediate" data-set="B">
+          <span class="card-badge">Intermediate</span>
+          <h2 class="card-title">Twist &amp; Burn</h2>
+          <p class="card-desc">Add rotation and dynamic moves to fire up your obliques.</p>
+          <div class="card-meta">
+            <span>10 min</span>
+            <span>6 exercises</span>
+            <span>2 rounds</span>
+          </div>
+        </button>
+
+        <!-- SET C -->
+        <button class="workout-card card-advanced" data-set="C">
+          <span class="card-badge">Advanced</span>
+          <h2 class="card-title">Iron Core</h2>
+          <p class="card-desc">Intense compound movements for a steel midsection.</p>
+          <div class="card-meta">
+            <span>10 min</span>
+            <span>6 exercises</span>
+            <span>3 rounds</span>
+          </div>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ===== WORKOUT DETAIL SCREEN ===== -->
+    <div id="screen-detail" class="screen">
+      <div class="detail-header">
+        <button id="btn-back" class="btn-icon" aria-label="Back">&larr;</button>
+        <h1 id="detail-title" class="detail-title">Core Foundations</h1>
+      </div>
+
+      <div class="detail-info">
+        <span id="detail-badge" class="card-badge">Beginner</span>
+        <span id="detail-meta" class="detail-meta-text">10 min &bull; 6 exercises &bull; 2 rounds</span>
+      </div>
+
+      <div id="exercise-list" class="exercise-list">
+        <!-- exercises injected by JS -->
+      </div>
+
+      <button id="btn-start-workout" class="btn-primary">Start Workout</button>
+    </div>
+
+    <!-- ===== EXERCISE DETAIL MODAL ===== -->
+    <div id="modal-exercise" class="modal">
+      <div class="modal-content">
+        <button id="modal-close" class="btn-icon modal-close-btn">&times;</button>
+        <h2 id="modal-title" class="modal-title">Exercise</h2>
+        <div id="modal-figure" class="modal-figure">
+          <!-- animated SVG figure inserted here -->
+        </div>
+        <div id="modal-tips" class="modal-tips"></div>
+        <h3 class="modal-video-heading">Video Demo</h3>
+        <div id="modal-video" class="modal-video">
+          <!-- YouTube embed inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ACTIVE WORKOUT SCREEN ===== -->
+    <div id="screen-active" class="screen">
+      <div class="active-header">
+        <button id="btn-quit-workout" class="btn-icon" aria-label="Quit">&times;</button>
+        <div class="active-round" id="active-round">Round 1 / 2</div>
+      </div>
+
+      <div class="active-progress-bar">
+        <div id="active-progress" class="active-progress-fill"></div>
+      </div>
+
+      <div class="active-exercise-name" id="active-exercise-name">Crunches</div>
+
+      <div class="active-figure" id="active-figure">
+        <!-- animated figure -->
+      </div>
+
+      <div class="active-timer" id="active-timer">0:45</div>
+      <div class="active-status" id="active-status">Work</div>
+
+      <div class="active-next" id="active-next">Next: Plank</div>
+
+      <div class="active-controls">
+        <button id="btn-pause" class="btn-round">Pause</button>
+      </div>
+    </div>
+
+    <!-- ===== COMPLETE SCREEN ===== -->
+    <div id="screen-complete" class="screen">
+      <div class="complete-content">
+        <div class="complete-emoji">&#x1F525;</div>
+        <h1 class="complete-title">Workout Complete!</h1>
+        <p class="complete-subtitle">You crushed it! Your core is on fire.</p>
+        <div class="complete-stats">
+          <div class="complete-stat">
+            <span class="complete-stat-val" id="complete-time">10:00</span>
+            <span class="complete-stat-label">Total Time</span>
+          </div>
+          <div class="complete-stat">
+            <span class="complete-stat-val" id="complete-exercises">12</span>
+            <span class="complete-stat-label">Exercises</span>
+          </div>
+        </div>
+        <button id="btn-done" class="btn-primary">Back to Workouts</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/workouts.js"></script>
+</body>
+</html>
