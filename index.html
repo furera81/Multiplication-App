@@ -110,6 +110,13 @@
       font-weight: 600;
     }
 
+    .card-tutor {
+      background: linear-gradient(135deg, #0a2a1a, #1a3a2a);
+      border: 2px solid rgba(0, 184, 148, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 184, 148, 0.15);
+    }
+    .card-tutor .card-title { color: #55efc4; }
+    .card-tutor .tag { background: rgba(0, 184, 148, 0.15); color: #55efc4; }
     .card-math .tag { background: rgba(108, 92, 231, 0.15); color: #a29bfe; }
     .card-workout .tag { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; }
   </style>
@@ -120,6 +127,17 @@
     <p class="subtitle">Tap to open</p>
 
     <div class="app-cards">
+
+      <a href="tutor.html" class="app-card card-tutor">
+        <span class="card-icon">&#x1F393;</span>
+        <h2 class="card-title">Math Tutor</h2>
+        <p class="card-desc">Weekly math challenges with grading, step-by-step hints, and trophies to collect. Fractions, word problems, geometry &amp; more!</p>
+        <div class="card-tags">
+          <span class="tag">Weekly Quiz</span>
+          <span class="tag">Graded</span>
+          <span class="tag">Trophies</span>
+        </div>
+      </a>
 
       <a href="math.html" class="app-card card-math">
         <span class="card-icon">&#x1F9EE;</span>

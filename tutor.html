@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#6c5ce7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Math Tutor - Weekly Challenge</title>
+  <link rel="stylesheet" href="css/tutor.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ===== HOME SCREEN ===== -->
+    <div id="screen-home" class="screen active">
+      <div class="home-content">
+        <div class="home-header">
+          <h1 class="app-title">Math Tutor</h1>
+          <p class="app-subtitle">Weekly Challenge</p>
+        </div>
+
+        <div id="weekly-card" class="weekly-card">
+          <div class="weekly-tag">This Week</div>
+          <h2 id="week-title" class="week-title">No quiz loaded yet</h2>
+          <p id="week-desc" class="week-desc">Ask your teacher to load this week's questions.</p>
+          <div id="week-meta" class="week-meta"></div>
+        </div>
+
+        <div class="home-actions">
+          <button id="btn-start-quiz" class="btn-primary" disabled>Start Quiz</button>
+          <button id="btn-trophies" class="btn-secondary">My Trophies</button>
+          <button id="btn-teacher" class="btn-ghost">Teacher Panel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== QUIZ SCREEN ===== -->
+    <div id="screen-quiz" class="screen">
+      <div class="quiz-header">
+        <button id="btn-quit-quiz" class="btn-icon-sm">&larr;</button>
+        <div class="quiz-stats">
+          <div class="quiz-stat">
+            <span class="qstat-label">Question</span>
+            <span id="q-progress" class="qstat-val">1/15</span>
+          </div>
+          <div class="quiz-stat">
+            <span class="qstat-label">Score</span>
+            <span id="q-score" class="qstat-val">0</span>
+          </div>
+          <div class="quiz-stat">
+            <span class="qstat-label">Streak</span>
+            <span id="q-streak" class="qstat-val">🔥0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-progress-bar-wrap">
+        <div id="q-progress-bar" class="q-progress-bar"></div>
+      </div>
+
+      <div class="quiz-body">
+        <div id="q-topic-badge" class="topic-badge">Fractions</div>
+        <div id="q-feedback" class="q-feedback"></div>
+        <div id="q-question" class="q-question-text">Loading...</div>
+      </div>
+
+      <div id="q-choices" class="q-choices"></div>
+
+      <div id="q-hint-wrap" class="q-hint-wrap hidden">
+        <button id="btn-hint" class="btn-hint">💡 Show Hint</button>
+        <div id="q-hint-text" class="q-hint-text hidden"></div>
+        <button id="btn-next" class="btn-primary btn-next hidden">Next Question →</button>
+      </div>
+    </div>
+
+    <!-- ===== RESULTS SCREEN ===== -->
+    <div id="screen-results" class="screen">
+      <div class="results-content">
+        <div id="res-grade-badge" class="grade-badge">A</div>
+        <div id="res-emoji" class="res-emoji">🏆</div>
+        <h1 id="res-title" class="res-title">Outstanding!</h1>
+        <p id="res-subtitle" class="res-subtitle"></p>
+
+        <div class="res-stats-grid">
+          <div class="res-stat-box">
+            <span id="res-score" class="res-stat-val">0</span>
+            <span class="res-stat-label">Score</span>
+          </div>
+          <div class="res-stat-box">
+            <span id="res-correct" class="res-stat-val">0/0</span>
+            <span class="res-stat-label">Correct</span>
+          </div>
+          <div class="res-stat-box">
+            <span id="res-accuracy" class="res-stat-val">0%</span>
+            <span class="res-stat-label">Accuracy</span>
+          </div>
+          <div class="res-stat-box">
+            <span id="res-streak" class="res-stat-val">0</span>
+            <span class="res-stat-label">Best Streak</span>
+          </div>
+        </div>
+
+        <div id="new-trophies-wrap" class="new-trophies-wrap hidden">
+          <h3 class="new-trophy-heading">🎉 New Trophy Unlocked!</h3>
+          <div id="new-trophies-list" class="new-trophies-list"></div>
+        </div>
+
+        <div id="res-mistakes-wrap" class="res-mistakes-wrap hidden">
+          <h3 class="res-section-title">Review Mistakes</h3>
+          <div id="res-mistakes-list" class="res-mistakes-list"></div>
+        </div>
+
+        <div class="res-actions">
+          <button id="btn-retry" class="btn-primary">Try Again</button>
+          <button id="btn-home-from-results" class="btn-secondary">Home</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TROPHY ROOM ===== -->
+    <div id="screen-trophies" class="screen">
+      <div class="trophy-room-header">
+        <button id="btn-back-from-trophies" class="btn-icon-sm">&larr;</button>
+        <h1 class="trophy-room-title">My Trophy Room</h1>
+      </div>
+      <div id="trophy-total" class="trophy-total"></div>
+      <div id="trophy-grid" class="trophy-grid"></div>
+    </div>
+
+    <!-- ===== TEACHER PANEL ===== -->
+    <div id="screen-teacher" class="screen">
+      <div class="teacher-header">
+        <button id="btn-back-from-teacher" class="btn-icon-sm">&larr;</button>
+        <h1 class="teacher-title">Teacher Panel</h1>
+      </div>
+
+      <div class="teacher-content">
+        <div class="teacher-info-box">
+          <p><strong>Paste your weekly questions below</strong> in JSON format. Each question needs:</p>
+          <ul>
+            <li><code>q</code> — the question text</li>
+            <li><code>answer</code> — the correct answer (must match one choice exactly)</li>
+            <li><code>choices</code> — array of 4 answer options</li>
+            <li><code>hint</code> — step-by-step explanation shown after answering</li>
+            <li><code>topic</code> — e.g. "Fractions", "Word Problems", "Geometry"</li>
+          </ul>
+        </div>
+
+        <div class="teacher-example">
+          <button id="btn-load-example" class="btn-ghost btn-sm">Load Example</button>
+        </div>
+
+        <label class="teacher-label" for="week-title-input">Week Title</label>
+        <input id="week-title-input" class="teacher-input" type="text" placeholder="e.g. Week 5 — Fractions & Geometry">
+
+        <label class="teacher-label" for="questions-input">Questions JSON</label>
+        <textarea id="questions-input" class="teacher-textarea" rows="16" placeholder='[
+  {
+    "q": "What is 1/2 + 1/4?",
+    "answer": "3/4",
+    "choices": ["1/2", "3/4", "1/3", "2/4"],
+    "hint": "Convert to a common denominator: 1/2 = 2/4, so 2/4 + 1/4 = 3/4",
+    "topic": "Fractions"
+  }
+]'></textarea>
+
+        <div id="teacher-error" class="teacher-error hidden"></div>
+
+        <button id="btn-save-questions" class="btn-primary">Save & Activate Quiz</button>
+        <button id="btn-clear-quiz" class="btn-danger">Clear Current Quiz</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/tutor.js"></script>
+</body>
+</html>
