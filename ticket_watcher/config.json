@@ -1,0 +1,34 @@
+{
+  "email": {
+    "sender_address": "YOUR_GMAIL@gmail.com",
+    "sender_app_password": "YOUR_GMAIL_APP_PASSWORD",
+    "recipient_address": "furertrauma@gmail.com",
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 465
+  },
+  "api_keys": {
+    "ticketmaster": "YOUR_TICKETMASTER_API_KEY",
+    "seatgeek_client_id": "YOUR_SEATGEEK_CLIENT_ID",
+    "seatgeek_client_secret": "YOUR_SEATGEEK_CLIENT_SECRET"
+  },
+  "price_thresholds": {
+    "default": 300,
+    "Haiti vs Scotland (Jun 13)": 250,
+    "Iraq vs Norway (Jun 16)": 250,
+    "Scotland vs Morocco (Jun 19)": 280,
+    "England vs Ghana (Jun 23)": 400,
+    "Norway vs France (Jun 26)": 300,
+    "Round of 32 (Jun 29)": 350,
+    "Quarterfinal (Jul 9)": 500
+  },
+  "check_interval_minutes": 60,
+  "cooldown_minutes": 120,
+  "sites": {
+    "ticketmaster": true,
+    "seatgeek": true,
+    "stubhub": true,
+    "tickpick": true,
+    "vivid_seats": true
+  },
+  "log_file": "ticket_watcher.log"
+}
