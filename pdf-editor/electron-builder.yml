@@ -1,0 +1,23 @@
+appId: com.pdfeditor.app
+productName: PDF Editor
+directories:
+  buildResources: resources
+  output: dist
+files:
+  - out/**/*
+  - package.json
+asarUnpack:
+  - '**/*.wasm'
+  - '**/node_modules/tesseract.js-core/**'
+mac:
+  category: public.app-category.productivity
+  target:
+    - dmg
+win:
+  target:
+    - nsis
+linux:
+  target:
+    - AppImage
+  category: Office
+npmRebuild: false
