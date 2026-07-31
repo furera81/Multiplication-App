@@ -7,9 +7,10 @@ and searchable — not just annotation overlays.
 ## Features
 
 - **Open/View** — renders PDFs with [pdf.js](https://mozilla.github.io/pdf.js/), page navigation and zoom.
-- **Edit Text** mode — click any run of real text in the PDF and change it. The app covers the original glyphs with the sampled background color and draws the replacement text in the same position/size (font, size, bold, and both colors are all adjustable in the popover before applying).
+- **Edit Text** mode — click any run of real text in the PDF and change it. The app covers the original glyphs with the sampled background color and draws the replacement text in the same position/size. It re-embeds the *original run's own font* (extracted client-side from pdf.js) whenever possible, so edited text matches the surrounding document instead of visibly switching to a generic substitute; size and both colors are adjustable in the popover, and Bold/Italic are available as a manual fallback when the original font can't be reused.
 - **OCR & Fix Text** mode — for scanned/image-only pages, run OCR ([Tesseract.js](https://github.com/naptha/tesseract.js), 16 bundled languages) to recognize text line-by-line. Click any recognized line to correct it and "burn" it into the page as real vector text, using the same redact-and-redraw mechanism as native editing.
 - **Make Document Searchable** — batch OCRs every image-only page and embeds an invisible text layer over the original scan (the same "sandwich PDF" technique tools like OCRmypdf use), so the whole document becomes selectable/searchable/copyable without changing how it looks.
+- **Undo / Redo** — full-document snapshot history (toolbar buttons + Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z), spanning edits, OCR corrections, and Make Searchable.
 - **Save / Save As** with unsaved-changes tracking.
 
 ## Why redact-and-redraw instead of "real" text editing?
@@ -31,6 +32,30 @@ Font/size/color are heuristically estimated from the PDF's text metrics (or
 the OCR bounding box for scanned pages) and are always editable before you
 apply the change.
 
+### Font matching
+
+The step that used to look worst — the replacement text rendering in a
+generic Helvetica no matter what the document actually used — now reuses the
+document's own font. pdf.js already parses and transcodes every embedded
+font it needs to render a page; loading the PDF with `fontExtraProperties:
+true` (see `renderer/src/lib/pdfjs.ts` → `loadPdf`) keeps those raw font
+program bytes around instead of discarding them after use, and
+`getEmbeddedFontBytes()` pulls them out via `page.commonObjs`. When you
+apply an edit, the main process (`main/pdf/textEdit.ts`) re-embeds that exact
+font with `@pdf-lib/fontkit` and checks `font.getCharacterSet()` to confirm
+it actually contains every character you typed (subsetted fonts often only
+include the glyphs the original document used). If the font is missing,
+unparseable, or doesn't cover the new text, it falls back to the closest of
+the 14 PDF standard fonts, picked from pdf.js's family hint (serif →
+Times, monospace → Courier, else Helvetica) plus the Bold/Italic checkboxes
+— and the UI shows a small notice so you know a substitute was used.
+
+One more wrinkle worth knowing about: many subsetted fonts have *no space
+glyph at all* — PDF generators often position words with raw offsets instead
+of an actual space character. Drawing a literal space through such a font
+renders a visible `.notdef` box, so replacement text is laid out word-by-word
+with a measured/estimated gap instead of drawn as one string.
+
 ## Architecture
 
 - **Main process** (`src/main`) owns all PDF mutation (via
@@ -50,10 +75,14 @@ apply the change.
 
 - Editing works best on single lines of text; multi-line paragraph reflow
   isn't supported (each pdf.js "text run" is edited independently).
-  Non-Latin scripts are drawn with the built-in Helvetica standard font,
-  which only covers WinAnsi encoding — extend `applyTextEdit` with
-  `@pdf-lib/fontkit` and an embedded Unicode font (already a dependency) if
-  you need full Unicode glyph coverage for edited/redrawn text.
+- Font matching only applies to native text edits (the original run has an
+  associated PDF font). OCR corrections and text on non-embedded/system
+  fonts always use the standard-font fallback, which only covers WinAnsi
+  encoding — non-Latin scripts there would need an embedded Unicode font.
+- The estimated space width used for manual word-spacing (see "Font
+  matching" above) is a fixed heuristic (27% of the font size), not measured
+  from the specific font, so very wide/narrow fonts may look very slightly
+  off in word spacing.
 - OCR accuracy depends on scan quality; always review recognized text before
   applying a correction.
 - The invisible OCR text layer used for "Make Searchable" approximates true

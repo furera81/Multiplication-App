@@ -5,26 +5,27 @@ import OcrBar from './components/OcrBar'
 import PageCanvas from './components/PageCanvas'
 import { extractTextRuns, loadPdf, renderPageToPng } from './lib/pdfjs'
 import { imageRectToPdf } from './lib/geometry'
+import { useDocHistory } from './lib/history'
 import type { EditableRegion, EditorMode, RgbColor } from './lib/types'
 
 const OCR_RENDER_SCALE = 3
 
-interface OpenDoc {
-  bytes: ArrayBuffer
+interface DocMeta {
   filePath: string | null
   fileName: string
 }
 
 export default function App(): React.JSX.Element {
-  const [doc, setDoc] = useState<OpenDoc | null>(null)
+  const [docMeta, setDocMeta] = useState<DocMeta | null>(null)
+  const history = useDocHistory()
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null)
   const [numPages, setNumPages] = useState(0)
   const [page, setPage] = useState(1)
   const [zoom, setZoom] = useState(1.2)
   const [mode, setMode] = useState<EditorMode>('view')
-  const [dirty, setDirty] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const [languages, setLanguages] = useState<string[]>(['eng'])
   const [ocrRunning, setOcrRunning] = useState(false)
   const [ocrByPage, setOcrByPage] = useState<Map<number, EditableRegion[]>>(new Map())
@@ -33,15 +34,16 @@ export default function App(): React.JSX.Element {
   const [makeSearchableBusy, setMakeSearchableBusy] = useState(false)
 
   const requestIdRef = useRef(0)
+  const docBytes = history.bytes
 
   useEffect(() => {
     let cancelled = false
-    if (!doc) {
+    if (!docBytes) {
       setPdfDoc(null)
       setNumPages(0)
       return
     }
-    loadPdf(doc.bytes).then((loaded) => {
+    loadPdf(docBytes).then((loaded) => {
       if (cancelled) return
       setPdfDoc(loaded)
       setNumPages(loaded.numPages)
@@ -50,7 +52,7 @@ export default function App(): React.JSX.Element {
     return () => {
       cancelled = true
     }
-  }, [doc])
+  }, [docBytes])
 
   useEffect(() => {
     const off = window.pdfEditor.onOcrProgress(({ status, progress }) => {
@@ -71,30 +73,30 @@ export default function App(): React.JSX.Element {
     try {
       const opened = await window.pdfEditor.openFile()
       if (!opened) return
-      setDoc({ bytes: opened.bytes, filePath: opened.filePath, fileName: opened.fileName })
-      setDirty(false)
+      setDocMeta({ filePath: opened.filePath, fileName: opened.fileName })
+      history.reset(opened.bytes)
       setOcrByPage(new Map())
       setMode('view')
       setPage(1)
     } catch (e) {
       setError(String(e))
     }
-  }, [])
+  }, [history])
 
   const handleSave = useCallback(
     async (saveAs: boolean) => {
-      if (!doc) return
+      if (!docBytes || !docMeta) return
       setBusy(saveAs ? 'Saving as…' : 'Saving…')
       setError(null)
       try {
         const result = await window.pdfEditor.save({
-          bytes: doc.bytes,
-          suggestedName: doc.fileName,
-          targetPath: saveAs ? null : doc.filePath
+          bytes: docBytes,
+          suggestedName: docMeta.fileName,
+          targetPath: saveAs ? null : docMeta.filePath
         })
         if (!result.canceled && result.filePath) {
-          setDoc((d) => (d ? { ...d, filePath: result.filePath } : d))
-          setDirty(false)
+          setDocMeta((d) => (d ? { ...d, filePath: result.filePath } : d))
+          history.markSaved()
         }
       } catch (e) {
         setError(String(e))
@@ -102,30 +104,69 @@ export default function App(): React.JSX.Element {
         setBusy(null)
       }
     },
-    [doc]
+    [docBytes, docMeta, history]
   )
+
+  const handleUndo = useCallback(() => {
+    setOcrByPage(new Map())
+    history.undo()
+  }, [history])
+
+  const handleRedo = useCallback(() => {
+    setOcrByPage(new Map())
+    history.redo()
+  }, [history])
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent): void {
+      const target = e.target as HTMLElement | null
+      const typing = target?.tagName === 'TEXTAREA' || target?.tagName === 'INPUT'
+      if (typing) return
+      const mod = e.metaKey || e.ctrlKey
+      if (!mod || e.key.toLowerCase() !== 'z') return
+      e.preventDefault()
+      if (e.shiftKey) handleRedo()
+      else handleUndo()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [handleUndo, handleRedo])
 
   const handleCommitEdit = useCallback(
     async (
       region: EditableRegion,
-      values: { text: string; fontSize: number; bold: boolean; textColor: RgbColor; coverColor: RgbColor }
+      values: {
+        text: string
+        fontSize: number
+        bold: boolean
+        italic: boolean
+        textColor: RgbColor
+        coverColor: RgbColor
+      }
     ) => {
-      if (!doc) return
+      if (!docBytes) return
       setEditBusy(true)
       setError(null)
       try {
         const result = await window.pdfEditor.applyTextEdit({
-          bytes: doc.bytes,
+          bytes: docBytes,
           pageIndex: page - 1,
           eraseBox: region.pdf,
           coverColor: values.coverColor,
           newText: values.text,
           fontSize: values.fontSize,
           bold: values.bold,
-          textColor: values.textColor
+          italic: values.italic,
+          textColor: values.textColor,
+          fontBytes: region.fontBytes,
+          fontFamilyHint: region.fontFamilyHint
         })
-        setDoc((d) => (d ? { ...d, bytes: result.bytes } : d))
-        setDirty(true)
+        history.push(result.bytes)
+        if (result.usedFallbackFont) {
+          setNotice(
+            "Used a similar system font — the original font didn't include all the characters you typed."
+          )
+        }
 
         if (region.source === 'ocr') {
           setOcrByPage((prev) => {
@@ -141,7 +182,7 @@ export default function App(): React.JSX.Element {
         setEditBusy(false)
       }
     },
-    [doc, page]
+    [docBytes, page, history]
   )
 
   const handleRunOcr = useCallback(async () => {
@@ -179,7 +220,7 @@ export default function App(): React.JSX.Element {
   }, [pdfDoc, page, languages])
 
   const handleMakeSearchable = useCallback(async () => {
-    if (!pdfDoc || !doc) return
+    if (!pdfDoc || !docBytes) return
     setMakeSearchableBusy(true)
     setError(null)
     setProgressLabel('Finding scanned pages…')
@@ -201,30 +242,33 @@ export default function App(): React.JSX.Element {
       const requestId = String(++requestIdRef.current)
       const result = await window.pdfEditor.makeSearchable({
         requestId,
-        bytes: doc.bytes,
+        bytes: docBytes,
         pages: imageOnlyPages,
         languages
       })
-      setDoc((d) => (d ? { ...d, bytes: result.bytes } : d))
-      setDirty(true)
+      history.push(result.bytes)
     } catch (e) {
       setError(String(e))
     } finally {
       setMakeSearchableBusy(false)
       setProgressLabel(null)
     }
-  }, [pdfDoc, doc, numPages, languages])
+  }, [pdfDoc, docBytes, numPages, languages, history])
 
   return (
     <div className="app">
       <Toolbar
-        fileName={doc?.fileName ?? null}
-        dirty={dirty}
+        fileName={docMeta?.fileName ?? null}
+        dirty={history.dirty}
         page={page}
         numPages={numPages}
         zoom={zoom}
         mode={mode}
         busy={!!busy}
+        canUndo={history.canUndo}
+        canRedo={history.canRedo}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
         onOpen={handleOpen}
         onSave={() => handleSave(false)}
         onSaveAs={() => handleSave(true)}
@@ -233,7 +277,7 @@ export default function App(): React.JSX.Element {
         onModeChange={setMode}
       />
 
-      {mode === 'edit-ocr' && doc && (
+      {mode === 'edit-ocr' && docMeta && (
         <OcrBar
           selectedLanguages={languages}
           onChangeLanguages={setLanguages}
@@ -248,10 +292,15 @@ export default function App(): React.JSX.Element {
           {error}
         </div>
       )}
+      {notice && (
+        <div className="banner info" onClick={() => setNotice(null)}>
+          {notice}
+        </div>
+      )}
       {busy && <div className="banner info">{busy}</div>}
 
       <div className="viewer">
-        {!doc && (
+        {!docMeta && (
           <div className="empty-state">
             <p>No PDF open</p>
             <button type="button" onClick={handleOpen}>
@@ -259,7 +308,7 @@ export default function App(): React.JSX.Element {
             </button>
           </div>
         )}
-        {doc && pdfDoc && (
+        {docMeta && pdfDoc && (
           <PageCanvas
             pdfDoc={pdfDoc}
             pageNumber={page}

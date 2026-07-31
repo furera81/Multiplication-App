@@ -11,6 +11,7 @@ interface Props {
     text: string
     fontSize: number
     bold: boolean
+    italic: boolean
     textColor: RgbColor
     coverColor: RgbColor
   }) => void
@@ -28,11 +29,13 @@ export default function EditPopover({
   const [text, setText] = useState(region.text)
   const [fontSize, setFontSize] = useState(Math.round(region.fontSize))
   const [bold, setBold] = useState(false)
+  const [italic, setItalic] = useState(false)
   const [textColor, setTextColor] = useState('#000000')
   const [coverColor, setCoverColor] = useState(rgbToHex(sampledCoverColor))
 
   const top = screenRect.top + screenRect.height + 8
   const left = Math.max(8, screenRect.left)
+  const hasOriginalFont = !!region.fontBytes
 
   return (
     <div className="edit-popover" style={{ top, left }} onClick={(e) => e.stopPropagation()}>
@@ -43,6 +46,11 @@ export default function EditPopover({
         onChange={(e) => setText(e.target.value)}
         placeholder="Replacement text"
       />
+      {hasOriginalFont && (
+        <div className="font-badge" title="Reusing the document's own embedded font for this run">
+          ✓ Matches original font
+        </div>
+      )}
       <div className="edit-popover-row">
         <label>
           Size
@@ -54,9 +62,23 @@ export default function EditPopover({
             onChange={(e) => setFontSize(Number(e.target.value) || 1)}
           />
         </label>
-        <label className="checkbox">
-          <input type="checkbox" checked={bold} onChange={(e) => setBold(e.target.checked)} />
+        <label className={`checkbox ${hasOriginalFont ? 'disabled' : ''}`}>
+          <input
+            type="checkbox"
+            checked={bold}
+            disabled={hasOriginalFont}
+            onChange={(e) => setBold(e.target.checked)}
+          />
           Bold
+        </label>
+        <label className={`checkbox ${hasOriginalFont ? 'disabled' : ''}`}>
+          <input
+            type="checkbox"
+            checked={italic}
+            disabled={hasOriginalFont}
+            onChange={(e) => setItalic(e.target.checked)}
+          />
+          Italic
         </label>
         <label>
           Text
@@ -84,6 +106,7 @@ export default function EditPopover({
               text,
               fontSize,
               bold,
+              italic,
               textColor: hexToRgb(textColor),
               coverColor: hexToRgb(coverColor)
             })

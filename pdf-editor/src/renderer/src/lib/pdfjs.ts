@@ -10,13 +10,24 @@ export interface TextRun {
   text: string
   /** PDF user-space coordinates (origin bottom-left) */
   pdf: { x: number; y: number; width: number; height: number; fontSize: number }
+  /** pdf.js's internal alias for the font that drew this run; key into page.commonObjs */
+  fontName: string
+  /** CSS-ish family hint from pdf.js (e.g. "serif", "monospace") for standard-font fallback matching */
+  fontFamilyHint?: string
 }
 
 export async function loadPdf(bytes: ArrayBuffer): Promise<PDFDocumentProxy> {
   // pdf.js detaches/transfers the buffer it's given; hand it a copy so the
   // caller can keep using the original bytes (e.g. to reload after an edit).
   const copy = bytes.slice(0)
-  return pdfjsLib.getDocument({ data: copy }).promise
+  return pdfjsLib.getDocument({
+    data: copy,
+    // By default pdf.js discards each font's raw program bytes right after
+    // handing them to the browser's FontFace API, to save memory. We need
+    // them to stick around so getEmbeddedFontBytes() can re-embed the same
+    // font when redrawing edited text (see lib/pdfjs.ts).
+    fontExtraProperties: true
+  }).promise
 }
 
 export async function renderPageToCanvas(
@@ -44,6 +55,8 @@ export async function extractTextRuns(page: PDFPageProxy): Promise<TextRun[]> {
     runs.push({
       id: `run-${i++}`,
       text: item.str,
+      fontName: item.fontName,
+      fontFamilyHint: content.styles[item.fontName]?.fontFamily,
       pdf: {
         x: transform[4],
         y: transform[5] - fontSize * 0.2,
@@ -54,6 +67,28 @@ export async function extractTextRuns(page: PDFPageProxy): Promise<TextRun[]> {
     })
   }
   return runs
+}
+
+/**
+ * Pull the raw font program bytes pdf.js already parsed out of the PDF for a
+ * given font alias, so we can re-embed the document's own font instead of a
+ * generic substitute when redrawing edited text. pdf.js transcodes whatever
+ * it embedded (TrueType/CFF/Type1) into an OpenType-compatible byte stream
+ * so the browser's FontFace API can use it — which conveniently also means
+ * fontkit (TrueType/OpenType only) can usually parse it directly. Returns
+ * undefined for non-embedded fonts (pdf.js substitutes a system font and
+ * never resolves font "data" in that case) or if it isn't loaded yet.
+ */
+export function getEmbeddedFontBytes(page: PDFPageProxy, fontName: string): ArrayBuffer | undefined {
+  try {
+    if (!page.commonObjs.has(fontName)) return undefined
+    const fontObj = page.commonObjs.get(fontName) as { data?: Uint8Array } | undefined
+    const data = fontObj?.data
+    if (!data || data.byteLength === 0) return undefined
+    return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer
+  } catch {
+    return undefined
+  }
 }
 
 /** Render a page to an offscreen canvas at a given DPI scale and return PNG bytes, for OCR. */

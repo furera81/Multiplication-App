@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PDFDocumentProxy, PageViewport } from 'pdfjs-dist'
-import { extractTextRuns, renderPageToCanvas } from '../lib/pdfjs'
+import { extractTextRuns, getEmbeddedFontBytes, renderPageToCanvas } from '../lib/pdfjs'
 import { pdfRectToScreen, sampleBackgroundColor, type ScreenRect } from '../lib/geometry'
 import type { EditableRegion, EditorMode, RgbColor } from '../lib/types'
 import EditPopover from './EditPopover'
@@ -15,7 +15,14 @@ interface Props {
   onRunOcr: () => void
   onCommitEdit: (
     region: EditableRegion,
-    values: { text: string; fontSize: number; bold: boolean; textColor: RgbColor; coverColor: RgbColor }
+    values: {
+      text: string
+      fontSize: number
+      bold: boolean
+      italic: boolean
+      textColor: RgbColor
+      coverColor: RgbColor
+    }
   ) => Promise<void>
   editBusy: boolean
 }
@@ -52,14 +59,22 @@ export default function PageCanvas({
       if (mode === 'edit-native') {
         const runs = await extractTextRuns(page)
         if (!cancelled) {
+          const fontBytesCache = new Map<string, ArrayBuffer | undefined>()
           setNativeRegions(
-            runs.map((r) => ({
-              id: r.id,
-              text: r.text,
-              fontSize: r.pdf.fontSize,
-              pdf: r.pdf,
-              source: 'native' as const
-            }))
+            runs.map((r) => {
+              if (!fontBytesCache.has(r.fontName)) {
+                fontBytesCache.set(r.fontName, getEmbeddedFontBytes(page, r.fontName))
+              }
+              return {
+                id: r.id,
+                text: r.text,
+                fontSize: r.pdf.fontSize,
+                pdf: r.pdf,
+                source: 'native' as const,
+                fontBytes: fontBytesCache.get(r.fontName),
+                fontFamilyHint: r.fontFamilyHint
+              }
+            })
           )
         }
       } else {

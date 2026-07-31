@@ -91,8 +91,8 @@ function registerIpcHandlers(): void {
   ipcMain.handle(
     IPC.applyTextEdit,
     async (_event, req: ApplyTextEditRequest): Promise<ApplyTextEditResult> => {
-      const bytes = await applyTextEdit(req)
-      return { bytes: toArrayBuffer(bytes) }
+      const { bytes, usedFallbackFont } = await applyTextEdit(req)
+      return { bytes: toArrayBuffer(bytes), usedFallbackFont }
     }
   )
 

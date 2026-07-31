@@ -293,6 +293,19 @@ input[type='color'] {
   gap: 4px;
 }
 
+.edit-popover-row label.checkbox.disabled {
+  opacity: 0.45;
+}
+
+.font-badge {
+  font-size: 11px;
+  color: var(--accent);
+  background: rgba(79, 140, 255, 0.12);
+  border-radius: 4px;
+  padding: 3px 6px;
+  width: fit-content;
+}
+
 .edit-popover-actions {
   display: flex;
   justify-content: flex-end;

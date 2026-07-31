@@ -8,6 +8,10 @@ interface Props {
   zoom: number
   mode: EditorMode
   busy: boolean
+  canUndo: boolean
+  canRedo: boolean
+  onUndo: () => void
+  onRedo: () => void
   onOpen: () => void
   onSave: () => void
   onSaveAs: () => void
@@ -24,6 +28,10 @@ export default function Toolbar({
   zoom,
   mode,
   busy,
+  canUndo,
+  canRedo,
+  onUndo,
+  onRedo,
   onOpen,
   onSave,
   onSaveAs,
@@ -44,6 +52,22 @@ export default function Toolbar({
           Save As
         </button>
       </div>
+
+      {fileName && (
+        <div className="toolbar-group">
+          <button type="button" onClick={onUndo} disabled={!canUndo} title="Undo (Ctrl/Cmd+Z)">
+            ↶ Undo
+          </button>
+          <button
+            type="button"
+            onClick={onRedo}
+            disabled={!canRedo}
+            title="Redo (Ctrl/Cmd+Shift+Z)"
+          >
+            ↷ Redo
+          </button>
+        </div>
+      )}
 
       <div className="toolbar-group filename">
         {fileName ? (

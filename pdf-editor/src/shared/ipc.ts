@@ -29,13 +29,25 @@ export interface ApplyTextEditRequest {
   coverColor: RgbColor
   newText: string
   fontSize: number
-  /** true = bold-ish standard font */
-  bold: boolean
   textColor: RgbColor
+  /**
+   * Raw font program bytes for the font that drew the original text run,
+   * extracted client-side from pdf.js's already-parsed font objects. When
+   * present the server tries to embed this exact font and use it, falling
+   * back to a standard-font match only if the replacement text needs glyphs
+   * the extracted font doesn't have.
+   */
+  fontBytes?: ArrayBuffer
+  /** CSS-ish font family hint (e.g. contains "serif"/"monospace") used to pick the closest standard font when fontBytes is absent or unusable */
+  fontFamilyHint?: string
+  bold: boolean
+  italic: boolean
 }
 
 export interface ApplyTextEditResult {
   bytes: ArrayBuffer
+  /** true if fontBytes was provided but couldn't be used (parse failure or missing glyphs), so a standard font was substituted */
+  usedFallbackFont: boolean
 }
 
 /** Despite the name, ocrRecognize returns line-level groupings (better UX for

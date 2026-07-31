@@ -11,6 +11,9 @@ export interface EditableRegion {
   fontSize: number
   pdf: PdfRect
   source: 'native' | 'ocr'
+  /** Raw font program bytes extracted from the original PDF, when available (native regions only) */
+  fontBytes?: ArrayBuffer
+  fontFamilyHint?: string
 }
 
 export type EditorMode = 'view' | 'edit-native' | 'edit-ocr'
