@@ -75,6 +75,12 @@
       box-shadow: 0 4px 20px rgba(255, 107, 107, 0.15);
     }
 
+    .card-tasks {
+      background: linear-gradient(135deg, #12262a, #16343a);
+      border: 2px solid rgba(79, 195, 192, 0.3);
+      box-shadow: 0 4px 20px rgba(79, 195, 192, 0.15);
+    }
+
     .card-icon {
       font-size: 2.8rem;
       margin-bottom: 10px;
@@ -89,6 +95,7 @@
 
     .card-math .card-title { color: #a29bfe; }
     .card-workout .card-title { color: #ff6b6b; }
+    .card-tasks .card-title { color: #4fc3c0; }
 
     .card-desc {
       color: #a0a0b8;
@@ -112,6 +119,7 @@
 
     .card-math .tag { background: rgba(108, 92, 231, 0.15); color: #a29bfe; }
     .card-workout .tag { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; }
+    .card-tasks .tag { background: rgba(79, 195, 192, 0.15); color: #4fc3c0; }
   </style>
 </head>
 <body>
@@ -143,6 +151,17 @@
         </div>
       </a>
 
+
+      <a href="tasks/" class="app-card card-tasks">
+        <span class="card-icon">&#x2705;</span>
+        <h2 class="card-title">Task Tracker</h2>
+        <p class="card-desc">Hebrew task follow-up with voice entry and WhatsApp import. Installs to the phone home screen and works offline.</p>
+        <div class="card-tags">
+          <span class="tag">Follow-ups</span>
+          <span class="tag">WhatsApp Import</span>
+          <span class="tag">Offline</span>
+        </div>
+      </a>
     </div>
   </div>
 </body>
