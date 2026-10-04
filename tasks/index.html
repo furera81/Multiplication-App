@@ -39,8 +39,12 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
 .chip{flex:none;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-size:.88rem;white-space:nowrap}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .chip i{font-style:normal;opacity:.75;margin-inline-start:4px;font-variant-numeric:tabular-nums}
-.filters{display:flex;gap:8px;margin-bottom:12px}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .filters>*{min-width:0}
+.grp{display:flex;flex-direction:column;gap:8px}
+.grp+.grp{margin-top:8px}
+.grp h3{display:flex;align-items:center;gap:8px;font-size:.95rem;color:var(--muted);padding-inline:2px}
+.grp h3 span{font-family:var(--f-body);font-size:.78rem;font-variant-numeric:tabular-nums;background:var(--soft);color:var(--ink);border-radius:99px;padding:1px 8px}
 input[type=text],input[type=date],select,textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
 textarea{resize:vertical;min-height:90px}
 .list{display:flex;flex-direction:column;gap:8px}
@@ -287,7 +291,8 @@ function attachMic(btn,input,append){
 }
 
 /* ---------- state & render ---------- */
-const S={view:'tasks',filter:'open',topic:'',q:''};
+const S={view:'tasks',filter:'open',topic:'',owner:'',group:'',q:''};
+const NOOWNER='__none';
 const VIEWS=[['tasks','משימות'],['control','בקרה'],['wa','וואטסאפ'],['more','דוח וגיבוי']];
 
 function renderTop(){
@@ -308,12 +313,19 @@ function render(){
 /* tasks view */
 const FILTERS=[['open','פתוחות',isOpen],['late','באיחור',isLate],['follow','למעקב',isFollow],['stale','ללא עדכון',isStale],['done','הושלמו',t=>!isOpen(t)]];
 function viewTasks(){
-  const topics=uniq('topic');
+  const topics=uniq('topic'),owners=uniq('owner');
+  if(S.owner&&S.owner!==NOOWNER&&!owners.includes(S.owner))S.owner='';
+  const inF=tasks.filter(FILTERS.find(x=>x[0]===S.filter)[2]);
+  const oc=o=>inF.filter(t=>o===NOOWNER?!t.owner:t.owner===o).length;
   const hasEx=tasks.some(t=>t.example);
   $('#app').innerHTML=
    (hasEx?`<div class="note"><span>אלו משימות לדוגמה.</span><button class="btn sm" data-act="clearEx">מחק דוגמאות</button></div>`:'')+
    `<div class="chips" role="group" aria-label="סינון">${FILTERS.map(f=>`<button class="chip" data-filter="${f[0]}" aria-pressed="${S.filter===f[0]}">${f[1]}<i>${tasks.filter(f[2]).length}</i></button>`).join('')}</div>`+
-   `<div class="filters"><select id="fTopic" aria-label="נושא"><option value="">כל הנושאים</option>${topics.map(x=>`<option${S.topic===x?' selected':''}>${esc(x)}</option>`).join('')}</select><input type="text" id="fQ" placeholder="חיפוש" value="${esc(S.q)}"></div>`+
+   `<div class="filters">`+
+   `<select id="fTopic" aria-label="נושא"><option value="">כל הנושאים</option>${topics.map(x=>`<option${S.topic===x?' selected':''}>${esc(x)}</option>`).join('')}</select>`+
+   `<select id="fOwner" aria-label="אחראי"><option value="">כל האחראים</option>${owners.map(x=>`<option value="${esc(x)}"${S.owner===x?' selected':''}>${esc(x)} (${oc(x)})</option>`).join('')}${tasks.some(t=>!t.owner)?`<option value="${NOOWNER}"${S.owner===NOOWNER?' selected':''}>ללא אחראי (${oc(NOOWNER)})</option>`:''}</select>`+
+   `<select id="fGroup" aria-label="קיבוץ"><option value="">ללא קיבוץ</option><option value="owner"${S.group==='owner'?' selected':''}>קבץ לפי אחראי</option><option value="topic"${S.group==='topic'?' selected':''}>קבץ לפי נושא</option></select>`+
+   `<input type="text" id="fQ" placeholder="חיפוש" value="${esc(S.q)}"></div>`+
    `<div class="list" id="list"></div>`;
   renderList();
 }
@@ -321,9 +333,14 @@ function renderList(){
   const f=FILTERS.find(x=>x[0]===S.filter)[2];
   const q=S.q.trim();
   const arr=tasks.filter(f).filter(t=>!S.topic||t.topic===S.topic)
+    .filter(t=>!S.owner||(S.owner===NOOWNER?!t.owner:t.owner===S.owner))
     .filter(t=>!q||(t.title+' '+t.owner+' '+t.topic+' '+t.notes).includes(q)).sort(sortTasks);
-  $('#list').innerHTML=arr.length?arr.map(card).join(''):
-    `<div class="empty">אין כאן משימות.<br>הקלד או הקלט משימה בשורה שלמטה.</div>`;
+  if(!arr.length){$('#list').innerHTML=`<div class="empty">אין כאן משימות.<br>הקלד או הקלט משימה בשורה שלמטה.</div>`;return}
+  if(!S.group){$('#list').innerHTML=arr.map(card).join('');return}
+  const key=S.group,none=key==='owner'?'ללא אחראי':'ללא נושא',m=new Map();
+  arr.forEach(t=>{const k=t[key]||'';if(!m.has(k))m.set(k,[]);m.get(k).push(t)});
+  const names=[...m.keys()].sort((a,b)=>!a?1:!b?-1:a.localeCompare(b,'he'));
+  $('#list').innerHTML=names.map(n=>`<section class="grp"><h3>${esc(n||none)}<span>${m.get(n).length}</span></h3>${m.get(n).map(card).join('')}</section>`).join('');
 }
 function card(t){
   const tags=[];
@@ -417,7 +434,7 @@ document.addEventListener('click',e=>{
   if(act==='toggle'&&t){t.status=isOpen(t)?'done':'open';t.updated=Date.now();save();render()}
   else if(act==='open')openSheet(id);
   else if(act==='clearEx'){tasks=tasks.filter(x=>!x.example);save();render();toast('הדוגמאות נמחקו')}
-  else if(act==='drill'){S.view='tasks';S.filter='open';S.topic=a.dataset.key==='topic'?a.dataset.val:'';S.q=a.dataset.key==='owner'?a.dataset.val:'';render()}
+  else if(act==='drill'){S.view='tasks';S.filter='open';S.topic=a.dataset.key==='topic'?a.dataset.val:'';S.owner=a.dataset.key==='owner'?(a.dataset.val||NOOWNER):'';S.q='';render()}
   else if(act==='waParse'){
     const dt=$('#waTopic').value.trim(),dow=$('#waOwner').value.trim();
     const mode=$('#waMode').value,sender=$('#waSender').value==='1';
@@ -437,7 +454,7 @@ document.addEventListener('click',e=>{
   else if(act==='waAdd'){
     const boxes=[...document.querySelectorAll('.pre input:checked')];
     boxes.forEach(b=>{const i=waItems[+b.dataset.k];tasks.push(newTask({title:i.title,topic:i.topic,owner:i.owner,due:i.due,pri:i.pri,notes:'מוואטסאפ'+(i.from?', מאת '+i.from:'')+(i.when?', '+i.when:'')}))});
-    save();toast('נוספו '+boxes.length+' משימות');S.view='tasks';S.filter='open';S.topic='';S.q='';render();
+    save();toast('נוספו '+boxes.length+' משימות');S.view='tasks';S.filter='open';S.topic='';S.owner='';S.q='';render();
   }
   else if(act==='copyRep')copy($('#rep'));
   else if(act==='mkBackup'){$('#bk').value=JSON.stringify(tasks.filter(x=>!x.example))}
@@ -464,6 +481,8 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   if(e.target.id==='fTopic'){S.topic=e.target.value;renderList()}
+  else if(e.target.id==='fOwner'){S.owner=e.target.value;renderList()}
+  else if(e.target.id==='fGroup'){S.group=e.target.value;renderList()}
 });
 function copy(el){
   el.focus();el.select();
@@ -476,7 +495,7 @@ function quickAdd(){
   const q=parseQuick(v);if(!q.title){toast('חסר שם למשימה');return}
   tasks.push(newTask(q));save();inp.value='';
   if(S.view!=='tasks'){S.view='tasks'}
-  S.filter='open';S.q='';
+  S.filter='open';S.owner='';S.q='';
   render();
   toast('נוסף: '+q.title+(q.due?' · '+dueLabel(q):''));
 }
